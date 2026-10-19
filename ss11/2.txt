@@ -1,0 +1,32 @@
+# Khắc phục sự cố dữ liệu trong kho thiết bị IoT
+## Phần 1: Phân tích các quy tắc vàng bị vi phạm
+### Bảng dữ liệu quản lý thiết bị IoT hiện đang vi phạm các nguyên tắc cốt lõi trong tư duy thiết kế cơ sở dữ liệu trên bảng tính:
+1. Vi phạm quy tắc không gộp ô (No Merge Cells):
+- Biểu hiện: Các ô ở hàng tiêu đề (Header) bị trộn (Merge Cell).
+- Hậu quả: Làm gián đoạn cấu trúc dạng bảng (tabular data), khiến công cụ lọc dữ liệu tự động (`AutoFilter`) hoặc các hàm tìm kiếm không thể nhận diện chính xác phạm vi của cột.
+2. Vi phạm quy tắc cấu trúc bảng liền mạch (No Blank Rows/Columns):
+- Biểu hiện: Tồn tại các hàng trống nằm ngay giữa bảng dữ liệu.
+- Hậu quả: Khi bạn sử dụng phím tắt `Ctrl + Shift + L` để bật bộ lọc, Excel sẽ hiểu nhầm ranh giới của bảng và chỉ nhận vùng dữ liệu từ đỉnh đến trước hàng trống đó, làm cho nút Filter bị ngắt quãng hoặc biến mất ở phần dưới bảng.
+3. Vi phạm quy tắc tính nhất quán và toàn vẹn dữ liệu (Data Consistency):
+- Biểu hiện: Dữ liệu trong cùng một cột "Trạng thái" chứa các khoảng trắng thừa vô hình (ví dụ: `"hỏng "` so với `"hỏng"`).
+- Hậu quả: Công cụ Filter coi đây là hai giá trị hoàn toàn khác nhau, khiến kết quả lọc bị chia tách thành nhiều nhóm dù thoạt nhìn bằng mắt thường chúng giống hệt nhau.
+## Phần 2: Hướng dẫn hoàn thiện và xử lý sự cố
+### Bước 1: Gỡ bỏ Merge Cell và làm sạch cấu trúc bảng
+1. Bôi đen toàn bộ vùng tiêu đề đang bị gộp ô.
+2. Trên thẻ Home, bấm vào mũi tên cạnh nút Merge & Center và chọn Unmerge Cells.
+3. Điền đầy đủ tên tiêu đề cho các ô tương ứng nếu cần thiết để đảm bảo mỗi cột đều có một dòng tiêu đề độc lập.
+### Bước 2: Xóa bỏ các hàng trống (Blank Rows)
+1. Chọn toàn bộ vùng bảng dữ liệu.
+2. Nhấn tổ hợp phím `Ctrl + G` $\rightarrow$ Chọn Special... $\rightarrow$ Chọn Blanks $\rightarrow$ Nhấn OK để Excel chọn tất cả các ô/hàng trống.
+3. Nhấp chuột phải vào vùng được chọn, chọn Delete $\rightarrow$ Chọn Entire row để xóa bỏ hoàn toàn các hàng trống làm đứt gãy mạch dữ liệu.
+### Bước 3: Sử dụng hàm TRIM() để làm sạch khoảng trắng thừa
+1. Chèn thêm một cột phụ tạm thời bên cạnh cột "Trạng thái" (ví dụ: đặt tên là Trạng thái chuẩn).
+2. Tại dòng đầu tiên của cột phụ, nhập công thức:
+```
+=TRIM(C2)
+```
+3. Kéo công thức xuống cho toàn bộ các dòng dữ liệu bên dưới để loại bỏ các khoảng trắng thừa vô hình.
+4. Sao chép (Copy) toàn bộ kết quả ở cột phụ vừa tạo $\rightarrow$ Nhấp chuột phải vào cột "Trạng thái" gốc $\rightarrow$ Chọn Paste as Values (Dán giá trị) để ghi đè dữ liệu sạch lên cột cũ, sau đó xóa cột phụ đi.
+### Bước 4: Kích hoạt lại bộ lọc AutoFilter
+1. Nhấp chọn một ô bất kỳ trong bảng dữ liệu chuẩn hóa.
+2. Nhấn tổ hợp phím `Ctrl + Shift + L` để tắt và bật lại bộ lọc `AutoFilter`. Lúc này, nút lọc sẽ hiển thị xuyên suốt trên toàn bộ tiêu đề và gom nhóm chính xác tuyệt đối các giá trị (như "hỏng") vào chung một mục duy nhất.

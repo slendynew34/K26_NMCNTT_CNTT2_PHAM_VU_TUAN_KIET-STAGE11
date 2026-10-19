@@ -1,0 +1,24 @@
+# Chuẩn hóa Heading Styles cho tài liệu SRS
+## Phần 1: Phân tích nguyên nhân lỗi
+1. Tại sao định dạng thủ công gây ra lỗi mục lục (TOC)?
+- Thiếu siêu dữ liệu cấu trúc: Tính năng tạo mục lục tự động (`Auto TOC`) trong Microsoft Word không nhận diện được các định dạng thủ công (như bôi đen, tăng cỡ chữ, đổi màu) là tiêu đề. Word chỉ quét và lập chỉ mục dựa trên các định dạng Styles chuẩn (như `Heading 1`, `Heading 2`, `Heading 3`).
+- Hậu quả: Vì Nam không áp dụng `Heading Styles`, Word hiểu nhầm toàn bộ tài liệu chỉ là các đoạn văn bản thường (`Normal`), dẫn đến việc bảng mục lục trống trơn và hiển thị thông báo `No table of contents entries found`. Đồng thời, khi thay đổi định dạng, Nam buộc phải sửa thủ công từng trang vì không có tính năng đồng bộ khuôn mẫu.
+2. Lỗi sai khiến đoạn văn bản dài 5 trang hiện lên mục lục:
+- Nguyên nhân: Nam đã vô tình áp dụng nhãn `Heading 1` cho một đoạn văn bản nội dung dài tới 5 trang (hoặc đoạn văn đó dính liền với tiêu đề và chưa ngắt đoạn/chọn đúng kiểu `Normal` cho phần thân bài).
+- Hậu quả: Word coi toàn bộ khối văn bản dài đó là một tiêu đề cấp 1 và đưa nguyên văn đoạn văn dài 5 trang đó vào bảng mục lục, làm hỏng hoàn toàn cấu trúc của trang mục lục.
+##Phần 2: Hướng dẫn các bước sửa lỗi chi tiết
+### Bước 1: Khắc phục lỗi bẫy văn bản 5 trang
+1. Bôi đen đoạn văn bản dài 5 trang đang bị gán nhãn nhầm là `Heading 1`.
+2. Trên thẻ `Home`, chuyển định dạng của đoạn văn này về kiểu chuẩn `Normal` (hoặc `Body Text`).
+3. Đảm bảo nhãn `Heading 1` chỉ áp dụng gọn gàng cho đúng dòng tiêu đề chính (ví dụ: "1. Giới thiệu", "2. Yêu cầu chức năng").
+### Bước 2: Gán lại nhãn Heading Styles chuẩn cấp bậc
+- Heading 1: Dùng cho các chương/phần chính (Ví dụ: `1. Giới thiệu`, `2. Yêu cầu chức năng`).
+- Heading 2: Dùng cho các mục con bên trong (Ví dụ: `2.1. Yêu cầu giao diện`, `2.2. Yêu cầu cơ sở dữ liệu`).
+- (Thao tác: Bôi đen dòng tiêu đề cần gán $\rightarrow$ Vào thẻ Home $\rightarrow$ Click chọn mẫu `Heading 1` hoặc `Heading 2` tương ứng).
+### Bước 3: Chèn lại bảng mục lục tự động (Auto TOC)
+1. Đặt con trỏ chuột tại vị trí trang muốn hiển thị mục lục.
+2. Chuyển sang thẻ References trên thanh công cụ Ribbon.
+3. Chọn mục Table of Contents $\rightarrow$ Chọn một mẫu tự động bất kỳ (ví dụ: Automatic Table 1 hoặc Automatic Table 2). Lúc này bảng mục lục sẽ quét đúng các tiêu đề đã được gán Heading.
+### Bước 4: Cập nhật số trang và nội dung mục lục
+- Sau khi bổ sung thêm nội dung hoặc chỉnh sửa tài liệu làm thay đổi số trang, click chuột phải vào bảng mục lục và chọn Update Field.
+- Chọn Update entire table để cập nhật toàn bộ cấu trúc tiêu đề và số trang mới nhất một cách chính xác tuyệt đối.

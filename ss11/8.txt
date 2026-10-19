@@ -1,0 +1,46 @@
+# Chữa Lỗi Bảng Đăng Ký Báo Cáo Viên Không Lọc Được
+## Phần 1: Phân tích lỗi
+### 1. Liệt kê các lỗi vi phạm trong bảng
+Dựa trên 5 Quy tắc Vàng Database, bảng dữ liệu hiện tại đang vi phạm các lỗi nghiêm trọng sau:
+- Lỗi 1 (Vi phạm Quy tắc số 1 - Hàng tiêu đề không merge và phải nằm ở hàng đầu tiên của bảng):
+ - Vị trí: Hàng đầu tiên của bảng chứa dòng chữ "DANH SÁCH BÁO CÁO VIÊN — HỘI NGHỊ KHKH 2026" bị trộn ô (Merge Cells) kéo dài từ cột A sang các cột khác.
+ - Hậu quả với AutoFilter: Khiến công cụ AutoFilter nhận diện sai phạm vi bảng, không thể hiểu đâu là hàng tiêu đề (Header) chính xác để bật nút lọc cho từng cột.
+- Lỗi 2 (Vi phạm Quy tắc số 4 - Không có hàng trống bên trong dữ liệu):
+ - Vị trí: Tồn tại hàng trống nằm ngay bên dưới dữ liệu của nhân vật "Trần Thị Bình" (trước dòng nhân vật "Lê Minh Châu").
+ - Hậu quả với AutoFilter: Công cụ AutoFilter sẽ bị ngắt quãng, chỉ nhận vùng dữ liệu từ hàng đầu tiên đến ngay trước dòng trống đó (chỉ quét được 2 dòng đầu), khiến việc lọc mất hoàn toàn các dữ liệu phía dưới (khoảng 118 báo cáo viên còn lại).
+- Lỗi 3 (Vi phạm Quy tắc số 5 - Tổng/Average đặt ngoài bảng):
+ - Vị trí: Dòng chứa "TỔNG SỐ CNTT: 45" lại được nhét chèn ngang vào chính giữa danh sách dữ liệu (nằm giữa dòng 2 và dòng 3).
+ - Hậu quả với AutoFilter: Làm gián đoạn tính liên tục của cấu trúc bảng, khiến AutoFilter hiểu đây là một bản ghi dữ liệu rác hoặc làm hỏng các phép tính thống kê khi lọc.
+- Lỗi 4 (Vi phạm tính đồng nhất và sạch sẽ của dữ liệu):
+ - Vị trí: Ô B3 chứa chuỗi `'Trần Thị Bình  '` có kèm theo các khoảng trắng thừa vô hình ở cuối.
+ - Hậu quả với AutoFilter: Khi lọc hoặc tìm kiếm tên, hệ thống không thể khớp chính xác với chuỗi không có khoảng trắng, dẫn đến sót dữ liệu hoặc sai lệch kết quả.
+### 2. Cơ chế so sánh chuỗi ký tự của Filter khi tồn tại khoảng trắng thừa (`'Trần Thị Bình  '` so với `'Trần Thị Bình'`)
+- Cơ chế so sánh: Công cụ AutoFilter (và hầu hết các hệ thống xử lý dữ liệu) thực hiện so sánh chuỗi theo từng ký tự dựa trên mã ASCII/Unicode (Exact String Matching).
+- Nguyên nhân lệch kết quả: Khoảng trắng (`space`) cũng được tính là một ký tự hợp lệ. Chuỗi `'Trần Thị Bình  '` dài hơn và khác biệt về mặt mã ký tự so với chuỗi sạch `'Trần Thị Bình'`. Do đó, khi bộ lọc thực hiện đối chiếu, nó nhận diện đây là hai giá trị hoàn toàn khác nhau và bỏ qua các bản ghi có chứa khoảng trắng thừa ẩn nếu người dùng không cẩn thận làm sạch từ trước.
+## Phần 2: Sửa lỗi & Nghiệm thu
+### 3. Vẽ lại cấu trúc bảng đúng chuẩnTiêu đề chính của báo cáo cần được đặt ở phía trên hoàn toàn bên ngoài bảng dữ liệu (ví dụ ở dòng 1-2). Bảng dữ liệu chuẩn cần tuân thủ cấu trúc liền mạch, không gộp ô, không hàng trống bên trong, và đưa dòng tổng kết xuống dưới cùng:
+|STT|Họ và Tên|Khoa / Viện|Điểm Xét Duyệt|Trạng Thái|
+|-|-|-|-|-|
+|1|Nguyễn Văn An|CNTT|8.5|Đã duyệt|
+|2|Trần Thị Bình|CNTT|7.9|Chờ duyệt|
+|3|Lê Minh Châu|Điện tử|8.2|Đã duyệt|
+|...|... (các dòng dữ liệu tiếp theo)|...|...|...|
+|Tổng số|Tổng số báo cáo viên CNTT:|(Đặt ngoài hoặc ở dưới cùng của bảng)| | |
+- Quy chuẩn bố cục:
+ - Tiêu đề bảng (`Header`) nằm ở dòng đầu tiên của vùng bảng (STT, Họ và Tên, Khoa / Viện,...), tuyệt đối không merge cells.
+ - Dữ liệu các bản ghi nằm liên tục bên dưới, không có bất kỳ hàng trống nào.
+ - Dòng tổng kết (`Tổng số CNTT`) được dời ra ngoài bảng (đặt ở phía dưới cùng sau khi kết thúc toàn bộ dữ liệu).
+### 4. Viết công thức hàm TRIM() và thao tác lọc dữ liệu
+- Công thức hàm TRIM() làm sạch cột Họ và Tên:
+ 1. Tạo một cột phụ tạm thời (ví dụ cột F) bên cạnh.
+ 2. Tại dòng dữ liệu đầu tiên (giả sử cột Họ và Tên gốc ở cột B, bắt đầu từ hàng 4), nhập công thức:
+```
+=TRIM(B4)
+```
+ 3. Kéo công thức xuống cho toàn bộ các dòng còn lại để loại bỏ sạch sẽ các khoảng trắng thừa vô hình.
+ 4. Copy toàn bộ cột phụ vừa làm sạch $\rightarrow$ Click chuột phải vào cột B gốc $\rightarrow$ Chọn Paste as Values (Dán giá trị) để lưu đè dữ liệu chuẩn, sau đó xóa cột phụ đi.
+- Thao tác lọc đúng để lấy danh sách báo cáo viên CNTT có điểm $\ge$ 8.0:
+ 1. Click chọn một ô bất kỳ trong bảng dữ liệu chuẩn hóa, nhấn `Ctrl + Shift + L` để bật bộ lọc AutoFilter.
+ 2. Lọc theo Khoa: Nhấp vào mũi tên lọc ở cột Khoa / Viện $\rightarrow$ Bỏ chọn tất cả và chỉ tích chọn ô `CNTT` $\rightarrow$ Nhấn OK.
+ 3. Lọc theo Điểm xét duyệt: Nhấp vào mũi tên lọc ở cột Điểm Xét Duyệt $\rightarrow$ Chọn Number Filters $\rightarrow$ Chọn Greater Than Or Equal To... (Lớn hơn hoặc bằng) $\rightarrow$ Nhập giá trị `8` vào ô điều kiện $\rightarrow$ Nhấn OK.
+ 4. Lúc này, bảng sẽ hiển thị chính xác tập hợp giao của hai điều kiện (~35 báo cáo viên CNTT đạt từ 8.0 điểm trở lên).
